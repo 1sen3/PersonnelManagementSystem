@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "PersonnelManagementSystem (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "PersonnelManagementSystem (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

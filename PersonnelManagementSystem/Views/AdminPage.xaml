@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="PersonnelManagementSystem.Views.AdminPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:PersonnelManagementSystem.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ic="using:FluentIcons.WinUI"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <CubicEase x:Key="EaseInOut" EasingMode="EaseInOut"/>
+
+        <Storyboard x:Key="IconMoveDownAnimation">
+            <DoubleAnimation
+                Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                From="0" To="12" Duration="0:0:0.3"
+                EasingFunction="{StaticResource EaseInOut}"/>
+            <DoubleAnimation
+                Storyboard.TargetProperty="Opacity"
+                From="1" To="0" Duration="0:0:0.2"
+                Storyboard.TargetName="TextBlockTarget"/>
+        </Storyboard>
+
+        <Storyboard x:Key="IconMoveUpAnimation">
+            <DoubleAnimation
+                Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                From="12" To="0" Duration="0:0:0.3"
+                EasingFunction="{StaticResource EaseInOut}"/>
+            <DoubleAnimation
+                Storyboard.TargetProperty="Opacity"
+                From="0" To="1" Duration="0:0:0.2"
+                Storyboard.TargetName="TextBlockTarget"/>
+        </Storyboard>
+    </Page.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TitleBar IsBackButtonVisible="False"
+                  IsPaneToggleButtonVisible="False"
+                  Height="46">
+            <TitleBar.Template>
+                <ControlTemplate>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Spacing="16" Padding="16 0 0 0">
+                        <Image Source="/Assets/StoreLogo.scale-100.png" Width="26" Height="26"/>
+                        <TextBlock Text="人事管理系统" VerticalAlignment="Center" FontSize="12"/>
+                        <TextBlock Text="管理员端" FontSize="12" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    </StackPanel>
+                </ControlTemplate>
+            </TitleBar.Template>
+        </TitleBar>
+
+        <NavigationView x:Name="nav"
+                        Grid.Row="1"
+                        IsBackButtonVisible="Collapsed"
+                        IsSettingsVisible="False"
+                        OpenPaneLength="76"
+                        IsPaneToggleButtonVisible="False"
+                        PaneDisplayMode="Left"
+                        SelectionChanged="nav_SelectionChanged">
+            <NavigationView.MenuItems>
+                <NavigationViewItem x:Name="Home"
+                                    Tag="Home">
+                    <StackPanel Orientation="Vertical"
+                                Margin="0 12 -12 12"
+                                Spacing="8">
+                        <ic:FluentIcon x:Name="HomeIcon" 
+                                       Icon="Home"
+                                       FontSize="24"
+                                       HorizontalAlignment="Center">
+                            <ic:FluentIcon.RenderTransform>
+                                <TranslateTransform X="0" Y="0"/>
+                            </ic:FluentIcon.RenderTransform>
+                        </ic:FluentIcon>
+                        <TextBlock x:Name="HomeText"
+                                   Text="主页"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center"
+                                   FontSize="10"
+                                   FontWeight="Bold"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    </StackPanel>
+                </NavigationViewItem>
+                <NavigationViewItem x:Name="StaffList"
+                                    Tag="StaffList">
+                    <StackPanel Orientation="Vertical"
+                                Margin="0 12 -12 12"
+                                Spacing="8">
+                        <ic:FluentIcon x:Name="StaffListIcon" 
+                                       Icon="PeopleList"
+                                       FontSize="24"
+                                       HorizontalAlignment="Center">
+                            <ic:FluentIcon.RenderTransform>
+                                <TranslateTransform X="0" Y="0"/>
+                            </ic:FluentIcon.RenderTransform>
+                        </ic:FluentIcon>
+                        <TextBlock x:Name="StaffListText" 
+                                   Text="员工列表"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center"
+                                   FontSize="10"
+                                   FontWeight="Bold"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    </StackPanel>
+                </NavigationViewItem>
+                <NavigationViewItem x:Name="ChangeStaff"
+                                    Tag="ChangeStaff">
+                    <StackPanel Orientation="Vertical"
+                                Margin="0 12 -12 12"
+                                Spacing="8">
+                        <ic:FluentIcon x:Name="ChangeStaffIcon" 
+                                       Icon="EditPerson"
+                                       FontSize="24"
+                                       HorizontalAlignment="Center">
+                            <ic:FluentIcon.RenderTransform>
+                                <TranslateTransform X="0" Y="0"/>
+                            </ic:FluentIcon.RenderTransform>
+                        </ic:FluentIcon>
+                        <TextBlock x:Name="ChangeStaffText" 
+                                   Text="人事变更"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center"
+                                   FontSize="10"
+                                   FontWeight="Bold"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    </StackPanel>
+                </NavigationViewItem>
+            </NavigationView.MenuItems>
+            <NavigationView.FooterMenuItems>
+                <NavigationViewItem x:Name="Settings"
+                                    Tag="Settings">
+                    <StackPanel Orientation="Vertical"
+                                Margin="0 12 -12 12"
+                                Spacing="8">
+                        <ic:FluentIcon x:Name="SettingsIcon" 
+                                       Icon="Settings"
+                                       FontSize="24"
+                                       HorizontalAlignment="Center">
+                            <ic:FluentIcon.RenderTransform>
+                                <TranslateTransform X="0" Y="0"/>
+                            </ic:FluentIcon.RenderTransform>
+                        </ic:FluentIcon>
+                        <TextBlock x:Name="SettingsText" 
+                                   Text="设置"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center"
+                                   FontSize="10"
+                                   FontWeight="Bold"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    </StackPanel>
+                </NavigationViewItem>
+            </NavigationView.FooterMenuItems>
+            <Frame x:Name="frame"/>
+        </NavigationView>
+    </Grid>
+</Page>
