@@ -9,12 +9,12 @@ using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using System;
 using System.Collections.Generic;
+using Windows.Globalization;
 
 namespace PersonnelManagementSystem.ViewModels
 {
     public class StaffListViewModel : INotifyPropertyChanged
     {
-        private readonly DatabaseService _databaseService;
         private ObservableCollection<Staff> _staffList;
         private bool _isLoading;
         public event PropertyChangedEventHandler PropertyChanged;
@@ -46,8 +46,7 @@ namespace PersonnelManagementSystem.ViewModels
         }
         public StaffListViewModel()
         {
-            _databaseService = new DatabaseService();
-            StaffList = new ObservableCollection<Staff>();
+            StaffList = [];
             LoadStaffDataAsync();
 
             AddNewStaffCommand = new RelayCommand(ExecuteAddNewStaffAsync);
@@ -58,7 +57,7 @@ namespace PersonnelManagementSystem.ViewModels
             try
             {
                 IsLoading = true;
-                var staffs = await _databaseService.GetStaffListAsync();
+                var staffs = await DatabaseService.GetStaffListAsync();
                 StaffList.Clear();
                 foreach (var staff in staffs) StaffList.Add(staff);
             }
@@ -77,13 +76,14 @@ namespace PersonnelManagementSystem.ViewModels
         }
         public async void ExecuteAddNewStaffAsync()
         {
-            ContentDialog dialog = new ContentDialog
+            ContentDialog dialog = new()
             {
                 XamlRoot = App.MainWindow.Content.XamlRoot,
                 Title = "添加新员工",
                 PrimaryButtonText = "确定",
                 SecondaryButtonText = "取消",
-                DefaultButton = ContentDialogButton.Primary
+                DefaultButton = ContentDialogButton.Primary,
+                IsPrimaryButtonEnabled = false
             };
 
             var stackPanel = new StackPanel { Spacing = 10,Orientation = Orientation.Horizontal };
@@ -105,7 +105,8 @@ namespace PersonnelManagementSystem.ViewModels
             var genderComboBox = new ComboBox
             {
                 Header = "性别",
-                Width = 200
+                Width = 200,
+                PlaceholderText = "请选择性别"
             };
             genderComboBox.Items.Add("男");
             genderComboBox.Items.Add("女");
@@ -116,7 +117,8 @@ namespace PersonnelManagementSystem.ViewModels
             {
                 Header = "出生日期",
                 PlaceholderText = "请选择出生日期",
-                Width = 200
+                Width = 200,
+                Language = "zh-CN"
             };
 
             // 部门选择器
@@ -126,7 +128,7 @@ namespace PersonnelManagementSystem.ViewModels
                 PlaceholderText = "请选择部门",
                 Width = 200
             };
-            var depts = await _databaseService.GetDepartmentListAsync();
+            var depts = await DatabaseService.GetDepartmentListAsync();
             foreach (string d in depts) DeptComboBox.Items.Add(d);
 
             // 职位选择器
@@ -136,7 +138,7 @@ namespace PersonnelManagementSystem.ViewModels
                 PlaceholderText = "请选择职位",
                 Width = 200
             };
-            var jobs = await _databaseService.GetJobListAsync();
+            var jobs = await DatabaseService.GetJobListAsync();
             foreach (string j in jobs) JobComboBox.Items.Add(j);
 
             stackPanel1.Children.Add(nameTextBox);
@@ -152,7 +154,7 @@ namespace PersonnelManagementSystem.ViewModels
                 PlaceholderText = "请选择受教育程度",
                 Width = 200
             };
-            var edus = await _databaseService.GetEduListAsync();
+            var edus = await DatabaseService.GetEduListAsync();
             foreach (string e in edus) EduComboBox.Items.Add(e);
 
             // 专业技能输入框
@@ -195,11 +197,62 @@ namespace PersonnelManagementSystem.ViewModels
 
             dialog.Content = stackPanel;
 
+            // 检查表单是否填满
+            void ValidateForm()
+            {
+                bool isValid = !string.IsNullOrEmpty(nameTextBox.Text) && genderComboBox.SelectedItem != null && BirthdayCalenderDatePicker.Date != null
+                               && DeptComboBox.SelectedItem != null && JobComboBox.SelectedItem != null && EduComboBox.SelectedItem != null && !string.IsNullOrWhiteSpace(SpecialtyTextBox.Text)
+                               && !string.IsNullOrWhiteSpace(AddressTextBox.Text) && !string.IsNullOrWhiteSpace(TelTextBox.Text) && !string.IsNullOrWhiteSpace(EmailTextBox.Text);
+                dialog.IsPrimaryButtonEnabled = isValid;
+            }
+
+            nameTextBox.TextChanged += (s, e) => ValidateForm();
+            genderComboBox.SelectionChanged += (s, e) => ValidateForm();
+            BirthdayCalenderDatePicker.DateChanged += (s, e) => ValidateForm();
+            DeptComboBox.SelectionChanged += (s, e) => ValidateForm();
+            JobComboBox.SelectionChanged += (s, e) => ValidateForm();
+            EduComboBox.SelectionChanged += (s, e) => ValidateForm();
+            SpecialtyTextBox.TextChanged += (s, e) => ValidateForm();
+            AddressTextBox.TextChanged += (s, e) => ValidateForm();
+            TelTextBox.TextChanged += (s, e) => ValidateForm();
+            EmailTextBox.TextChanged += (s, e) => ValidateForm();
+
+            ValidateForm();
+
             var result = await dialog.ShowAsync();
+
+            if (result == ContentDialogResult.Primary)
+            {
+                Staff NewStaff = new Staff
+                {
+                    Name = nameTextBox.Text,
+                    Sex = genderComboBox.SelectedItem?.ToString(),
+                    Birthday = BirthdayCalenderDatePicker.Date.Value.ToString("yyyy-MM-dd"),
+                    Department = DeptComboBox.SelectedItem?.ToString(),
+                    Job = JobComboBox.SelectedItem?.ToString(),
+                    Education = EduComboBox.SelectedItem?.ToString(),
+                    Specialty = SpecialtyTextBox.Text,
+                    Address = AddressTextBox.Text,
+                    Telephone = TelTextBox.Text,
+                    Email = EmailTextBox.Text
+                };
+
+                await DatabaseService.AddNewStaffAsync(NewStaff);
+
+                ContentDialog success = new()
+                {
+                    Title = "录入成功",
+                    Content = "成功录入新员工的信息。",
+                    PrimaryButtonText = "好",
+                    XamlRoot = App.MainWindow.Content.XamlRoot
+                };
+
+                _ = await success.ShowAsync();
+            }
         }
         public async void ExecuteEditStaffInfoAsync()
         {
-            ContentDialog dialog = new ContentDialog
+            ContentDialog dialog = new ()
             {
                 XamlRoot = App.MainWindow.Content.XamlRoot,
                 Title = "修改员工信息",
@@ -251,7 +304,7 @@ namespace PersonnelManagementSystem.ViewModels
                 PlaceholderText = "请选择受教育程度",
                 Width = 200
             };
-            var edus = await _databaseService.GetEduListAsync();
+            var edus = await DatabaseService.GetEduListAsync();
             foreach (string e in edus) EduComboBox.Items.Add(e);
 
             // 专业技能输入框
@@ -295,7 +348,7 @@ namespace PersonnelManagementSystem.ViewModels
 
             dialog.Content = stackPanel;
 
-            var result = await dialog.ShowAsync();
+            _ = await dialog.ShowAsync();
         }
     }
 }

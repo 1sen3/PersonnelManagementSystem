@@ -40,7 +40,7 @@ namespace PersonnelManagementSystem.Views
             InitializeNavItems();
             InitializeNavItemAnimations();
 
-            nav.SelectedItem = Home;
+            nav.SelectedItem = StaffList;
             frame.Navigate(typeof(StaffListPage));
         }
 

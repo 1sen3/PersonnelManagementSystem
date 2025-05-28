@@ -20,17 +20,20 @@
             <TextBox x:Name="username"
                      PlaceholderText="请输入工号"
                      Width="300"
-                     HorizontalAlignment="Center"/>
+                     HorizontalAlignment="Center"
+                     Text="{x:Bind ViewModel.Id,Mode=TwoWay}"/>
             <PasswordBox x:Name="password"
                      PlaceholderText="请输入密码"
                      Width="300"
-                     HorizontalAlignment="Center"/>
+                     HorizontalAlignment="Center"
+                     Password="{x:Bind ViewModel.Password,Mode=TwoWay}"/>
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Center"
                         Spacing="12">
                 <Button x:Name="LoginButton"
                         Content="登录"
-                        Style="{ThemeResource AccentButtonStyle}"/>
+                        Style="{ThemeResource AccentButtonStyle}"
+                        Command="{x:Bind ViewModel.LoginCommand}"/>
                 <Button x:Name="ForgetPasswordButton"
                         Content="忘记密码"/>
             </StackPanel>

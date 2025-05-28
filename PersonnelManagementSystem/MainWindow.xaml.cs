@@ -30,7 +30,11 @@ namespace PersonnelManagementSystem
             ExtendsContentIntoTitleBar = true;
             AppWindow.TitleBar.PreferredHeightOption = Microsoft.UI.Windowing.TitleBarHeightOption.Tall;
 
-            frame.Content = new AdminPage();
+            frame.Content = new LoginPage();
+        }
+        public void NavigatePage(Page page)
+        {
+            frame.Content = page;
         }
     }
 }

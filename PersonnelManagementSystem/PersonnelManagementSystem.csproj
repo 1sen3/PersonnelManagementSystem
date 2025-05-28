@@ -18,6 +18,7 @@
     <None Remove="Views\HomePage.xaml" />
     <None Remove="Views\LoginPage.xaml" />
     <None Remove="Views\StaffListPage.xaml" />
+    <None Remove="Views\StaffPage.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -49,6 +50,11 @@
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.4188" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.7.250513003" />
     <PackageReference Include="MySql.Data" Version="9.3.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\StaffPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\SettingsPage.xaml">
@@ -96,5 +102,6 @@
     <PublishReadyToRun Condition="'$(Configuration)' != 'Debug'">True</PublishReadyToRun>
     <PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
     <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">True</PublishTrimmed>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 </Project>

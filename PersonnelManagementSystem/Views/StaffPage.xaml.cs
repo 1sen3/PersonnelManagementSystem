@@ -10,7 +10,6 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
-using PersonnelManagementSystem.ViewModels;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
@@ -22,13 +21,11 @@ namespace PersonnelManagementSystem.Views
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class LoginPage : Page
+    public sealed partial class StaffPage : Page
     {
-        public LoginViewModel ViewModel { get; } = new LoginViewModel();
-        public LoginPage()
+        public StaffPage()
         {
             InitializeComponent();
-            DataContext = ViewModel;
         }
     }
 }

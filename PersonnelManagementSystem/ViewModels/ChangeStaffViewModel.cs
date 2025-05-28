@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -14,7 +14,6 @@ namespace PersonnelManagementSystem.ViewModels
 {
     public class ChangeStaffViewModel : INotifyPropertyChanged
     {
-        private readonly DatabaseService _databaseService;
         private ObservableCollection<Personnel> _personnelList;
         private bool _isLoading;
         public event PropertyChangedEventHandler PropertyChanged;
@@ -45,7 +44,6 @@ namespace PersonnelManagementSystem.ViewModels
         }
         public ChangeStaffViewModel()
         {
-            _databaseService = new DatabaseService();
             PersonnelList = new ObservableCollection<Personnel>();
             LoadPersonnelsDataAsync();
 
@@ -56,7 +54,7 @@ namespace PersonnelManagementSystem.ViewModels
             try
             {
                 IsLoading = true;
-                var personnels = await _databaseService.GetPersonnelListAsync();
+                var personnels = await DatabaseService.GetPersonnelListAsync();
                 PersonnelList.Clear();
                 foreach (var Personnel in personnels) PersonnelList.Add(Personnel);
             }
@@ -111,7 +109,7 @@ namespace PersonnelManagementSystem.ViewModels
                 {
                     try
                     {
-                        bool exists = await _databaseService.CheckStaffExistAsync(staffIdBox.Text);
+                        bool exists = await DatabaseService.CheckStaffExistAsync(staffIdBox.Text);
                         if (!exists)
                         {
                             staffIdValidationMessage.Text = "该工号不存在！";
@@ -136,7 +134,7 @@ namespace PersonnelManagementSystem.ViewModels
                 Header = "变更操作",
                 PlaceholderText = "请选择变更操作"
             };
-            var changes = await _databaseService.GetChangeListAsync();
+            var changes = await DatabaseService.GetChangeListAsync();
             foreach (string c in changes) operationBox.Items.Add(c);
             contentPanel.Children.Add(operationBox);
 
@@ -165,7 +163,7 @@ namespace PersonnelManagementSystem.ViewModels
                             Header = "新职务",
                             PlaceholderText = "请选择新职务"
                         };
-                        var Jobs = await _databaseService.GetJobListAsync();
+                        var Jobs = await DatabaseService.GetJobListAsync();
                         foreach (string j in Jobs) newJobBox.Items.Add(j);
                         dynamicFormPanel.Children.Add(newJobBox);
                         break;
@@ -175,7 +173,7 @@ namespace PersonnelManagementSystem.ViewModels
                             Header = "新部门",
                             PlaceholderText = "请选择新部门"
                         };
-                        var Departments = await _databaseService.GetDepartmentListAsync();
+                        var Departments = await DatabaseService.GetDepartmentListAsync();
                         foreach (string d in Departments) newDepartmentBox.Items.Add(d);
 
                         newJobBox = new ComboBox
@@ -183,7 +181,7 @@ namespace PersonnelManagementSystem.ViewModels
                             Header = "新职务",
                             PlaceholderText = "请选择新职务"
                         };
-                        Jobs = await _databaseService.GetJobListAsync();
+                        Jobs = await DatabaseService.GetJobListAsync();
                         foreach (string j in Jobs) newJobBox.Items.Add(j);
 
                         dynamicFormPanel.Children.Add(newDepartmentBox);
@@ -226,7 +224,7 @@ namespace PersonnelManagementSystem.ViewModels
                 }
 
                 // 再次验证工号是否存在
-                bool staffExists = await _databaseService.CheckStaffExistAsync(staffIdBox.Text);
+                bool staffExists = await DatabaseService.CheckStaffExistAsync(staffIdBox.Text);
                 if (!staffExists)
                 {
                     ContentDialog errorDialog = new ContentDialog
@@ -342,7 +340,7 @@ namespace PersonnelManagementSystem.ViewModels
                     }
 
                     // 调用 DatabaseService 的 ChangeStaffAsync 方法
-                    bool success = await _databaseService.ChangeStaffAsync(staffId, operation, newDept, newJob, reason);
+                    bool success = await DatabaseService.ChangeStaffAsync(staffId, operation, newDept, newJob, reason);
 
                     if (success)
                     {

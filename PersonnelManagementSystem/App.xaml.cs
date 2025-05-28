@@ -11,6 +11,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.UI.Xaml.Shapes;
+using PersonnelManagementSystem.Models;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
@@ -28,6 +29,7 @@ namespace PersonnelManagementSystem
     {
         private Window? _window;
         public static MainWindow MainWindow { get; set; }
+        public static Staff CurrentUser { get; set; }
 
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
