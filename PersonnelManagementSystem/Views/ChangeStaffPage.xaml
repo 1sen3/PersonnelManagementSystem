@@ -40,18 +40,23 @@
             </StackPanel>
         </Grid>
         <Border Background="#40808080" Grid.Row="1"/>
-        <StackPanel Orientation="Vertical"
-                    Grid.Row="2"
-                    Padding="16">
+        <Grid Grid.Row="2" Padding="16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            
             <ProgressRing IsActive="{x:Bind ViewModel.IsLoading,Mode=OneWay}"
                           Width="50"
                           Height="50"
                           HorizontalAlignment="Center"
-                          Visibility="{x:Bind ViewModel.IsLoading,Mode=OneWay}"/>
+                          Visibility="{x:Bind ViewModel.IsLoading,Mode=OneWay}"
+                          Grid.Row="0"/>
             <ListView x:Name="PersonnelListView"
                       SelectionMode="Single"
                       HorizontalAlignment="Stretch"
-                      ItemsSource="{x:Bind ViewModel.PersonnelList,Mode=OneWay}">
+                      ItemsSource="{x:Bind ViewModel.PersonnelList,Mode=OneWay}"
+                      Grid.Row="1">
                 <ListView.Header>
                     <Grid Padding="16,12" ColumnSpacing="16">
                         <Grid.ColumnDefinitions>
@@ -109,6 +114,6 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-        </StackPanel>
+        </Grid>
     </Grid>
 </Page>

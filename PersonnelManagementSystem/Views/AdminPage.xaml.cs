@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -15,7 +16,9 @@ using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Navigation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI.ApplicationSettings;
 using static System.Collections.Specialized.BitVector32;
+using PersonnelManagementSystem.Views;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -38,7 +41,7 @@ namespace PersonnelManagementSystem.Views
             InitializeNavItemAnimations();
 
             nav.SelectedItem = Home;
-            frame.Navigate(typeof(HomePage));
+            frame.Navigate(typeof(StaffListPage));
         }
 
         private void nav_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
@@ -55,6 +58,9 @@ namespace PersonnelManagementSystem.Views
                     break;
                 case "ChangeStaff":
                     frame.Navigate(typeof(ChangeStaffPage));
+                    break;
+                case "Settings":
+                    frame.Navigate(typeof(SettingsPage));
                     break;
             }
         }

@@ -22,7 +22,7 @@ namespace PersonnelManagementSystem.Services
             {
                 using(var connection = new MySqlConnection(connectionString))
                 {
-                    connection.Open();
+                    await connection.OpenAsync();
                     var command = new MySqlCommand("select s.sID,s.sPassword,s.sName,s.sSex,s.sBirthday,d.dName,j.jDescription,\r\ne.eDescription,s.sSpecialty,s.sAddress,s.sTel,s.sEmail,state.stateDescription\r\n from shuyisen_staff s \r\njoin shuyisen_department d on s.dID = d.dID \r\njoin shuyisen_job j on s.jCode = j.jCode\r\njoin shuyisen_edu e on s.eCode = e.eCode\r\njoin shuyisen_staff_state state on s.stateCode = state.stateCode", connection);
                     var reader = command.ExecuteReader();
                     while (reader.Read())
@@ -59,9 +59,9 @@ namespace PersonnelManagementSystem.Services
             {
                 using (var connection = new MySqlConnection(connectionString))
                 {
-                    connection.Open();
+                    await connection.OpenAsync();
                     var command = new MySqlCommand("select p.pID,p.sID,s.sName,j.jDescription,state.stateDescription,c.cDescription,p.pDescription from shuyisen_personnel p join shuyisen_staff s on s.sID = p.sID join shuyisen_job j on j.jCode = s.jCode join shuyisen_staff_state state on s.stateCode = state.stateCode join shuyisen_change c on p.cCode = c.cCode order by p.pID asc", connection);
-                    var reader = command.ExecuteReader();
+                    var reader = await command.ExecuteReaderAsync();
                     while (reader.Read())
                     {
                         personnels.Add(new Personnel
@@ -93,7 +93,7 @@ namespace PersonnelManagementSystem.Services
                 {
                     await connection.OpenAsync();
                     var command = new MySqlCommand("select cDescription from shuyisen_kcsj.shuyisen_change where cDescription != '入职' order by cCode asc", connection);
-                    var reader = command.ExecuteReader();
+                    var reader = await command.ExecuteReaderAsync();
                     while (reader.Read())
                     {
                         Changes.Add(reader.GetString("cDescription"));
@@ -129,6 +129,29 @@ namespace PersonnelManagementSystem.Services
                 throw new Exception("获取职务信息失败", ex);
             }
         }
+        // 获取所有教育程度
+        public async Task<List<string>> GetEduListAsync()
+        {
+            var Edus = new List<string>();
+            try
+            {
+                using(var connection = new MySqlConnection(connectionString))
+                {
+                    await connection.OpenAsync();
+                    var command = new MySqlCommand("select eDescription from shuyisen_edu order by eCode asc", connection);
+                    var reader = await command.ExecuteReaderAsync();
+                    while (reader.Read())
+                    {
+                        Edus.Add(reader.GetString("eDescription"));
+                    }
+                }
+                return Edus;
+            }
+            catch(Exception ex)
+            {
+                throw new Exception("获取教育程度信息失败", ex);
+            }
+        }
         // 获取所有部门
         public async Task<List<string>> GetDepartmentListAsync()
         {
@@ -150,6 +173,80 @@ namespace PersonnelManagementSystem.Services
             catch(Exception ex)
             {
                 throw new Exception("获取部门信息失败", ex);
+            }
+        }
+        // 员工调动
+        public async Task<bool> ChangeStaffAsync(string sID, string operation, string newDept,string newJob,string reason)
+        {
+            try
+            {
+                using (var connection = new MySqlConnection(connectionString))
+                {
+                    await connection.OpenAsync();
+                    var command = connection.CreateCommand();
+                    if ("职务变动".Equals(operation))
+                    {
+                        command.CommandText = "update shuyisen_staff set jCode = (select jCode from shuyisen_job where jDescription = @newJob) where sID = @sID";
+                        command.Parameters.AddWithValue("@newJob", newJob);
+                        command.Parameters.AddWithValue("@sID", sID);
+                    }
+                    else if ("调岗".Equals(operation))
+                    {
+                        command.CommandText = "CALL proc_staff_transfer(@sID, (SELECT dID FROM shuyisen_department WHERE dName = @newDept), " +
+                              "(SELECT jCode FROM shuyisen_job WHERE jDescription = @newJob), @reason)";
+                        command.Parameters.AddWithValue("@sID", sID);
+                        command.Parameters.AddWithValue("@newDept", newDept);
+                        command.Parameters.AddWithValue("@newJob", newJob);
+                        command.Parameters.AddWithValue("@reason", reason);
+                    }
+                    else if ("辞退".Equals(operation))
+                    {
+                        command.CommandText = "call proc_staff_leave(@sID,@reason)";
+                        command.Parameters.AddWithValue("@sID", sID);
+                        command.Parameters.AddWithValue("@reason", reason);
+                    }
+                    else if ("休假".Equals(operation))
+                    {
+                        command.CommandText = "call proc_staff_vacation(@sID,@reason)";
+                        command.Parameters.AddWithValue("@sID", sID);
+                        command.Parameters.AddWithValue("@reason", reason);
+                    }
+                    else if ("返岗".Equals(operation))
+                    {
+                        command.CommandText = "call proc_staff_rework(@sID,@reason)";
+                        command.Parameters.AddWithValue("@sID", sID);
+                        command.Parameters.AddWithValue("@reason", reason);
+                    }
+                    await command.ExecuteNonQueryAsync();
+
+                    return true;
+                }
+            }
+            catch(Exception ex)
+            {
+                throw new Exception("添加人事变更记录出错", ex);
+            }
+        }
+        // 查询员工是否存在
+        public async Task<bool> CheckStaffExistAsync(string sID)
+        {
+            try
+            {
+                using(var connection = new MySqlConnection(connectionString))
+                {
+                    await connection.OpenAsync();
+                    var command = connection.CreateCommand();
+                    command.CommandText = "select count(*) from shuyisen_staff where sID = @sID";
+                    command.Parameters.AddWithValue("@sID", sID);
+                    var result = await command.ExecuteScalarAsync();
+                    int count = Convert.ToInt32(result);
+
+                    return count >= 1;
+                }
+            }
+            catch(Exception ex)
+            {
+                throw new Exception("查询员工是否存在失败"+ex.Message, ex);
             }
         }
     }

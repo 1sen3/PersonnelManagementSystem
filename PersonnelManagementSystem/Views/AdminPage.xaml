@@ -65,7 +65,8 @@
                         SelectionChanged="nav_SelectionChanged">
             <NavigationView.MenuItems>
                 <NavigationViewItem x:Name="Home"
-                                    Tag="Home">
+                                    Tag="Home"
+                                    Visibility="Collapsed">
                     <StackPanel Orientation="Vertical"
                                 Margin="0 12 -12 12"
                                 Spacing="8">

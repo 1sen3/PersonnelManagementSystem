@@ -31,14 +31,16 @@
             <StackPanel Orientation="Horizontal" Spacing="16" Grid.Column="1">
                 <Button x:Name="AddNewStaffButton"
                         VerticalAlignment="Center"
-                        Style="{ThemeResource AccentButtonStyle}">
+                        Style="{ThemeResource AccentButtonStyle}"
+                        Command="{x:Bind ViewModel.AddNewStaffCommand}">
                     <StackPanel Orientation="Horizontal" Spacing="12">
                         <FontIcon Glyph="&#xE8FA;" VerticalAlignment="Center" FontSize="16"/>
                         <TextBlock Text="添加新员工" VerticalAlignment="Center" FontSize="14"/>
                     </StackPanel>
                 </Button>
                 <Button x:Name="EditStaffButton"
-                        VerticalAlignment="Center">
+                        VerticalAlignment="Center"
+                        Command="{x:Bind ViewModel.EditStaffInfoCommand}">
                     <StackPanel Orientation="Horizontal" Spacing="12">
                         <FontIcon Glyph="&#xE70F;" VerticalAlignment="Center" FontSize="16"/>
                         <TextBlock Text="修改员工信息" VerticalAlignment="Center" FontSize="14"/>
