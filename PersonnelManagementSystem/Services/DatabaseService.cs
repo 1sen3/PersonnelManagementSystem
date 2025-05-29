@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Google.Protobuf.WellKnownTypes;
+using Microsoft.UI.Xaml.Controls;
 using MySql.Data.MySqlClient;
 using PersonnelManagementSystem.Models;
 using Windows.Data.Text;
@@ -298,6 +299,28 @@ namespace PersonnelManagementSystem.Services
             int cnt = Convert.ToInt32(result); // 这样写更安全
             return cnt;
         }
+        // 获取员工工号与姓名信息
+        public static async Task<List<string>> GetStaffIdAndNameAsync()
+        {
+            List<string> result = [];
+            try
+            {
+                using var connection = new MySqlConnection(connectionString);
+                await connection.OpenAsync();
+                var command = new MySqlCommand("select sID,sName from view_all_staff", connection);
+                var reader = await command.ExecuteReaderAsync();
+                while(await reader.ReadAsync())
+                {
+                    string tmp = reader.GetString("sID") + " - " + reader.GetString("sName");
+                    result.Add(tmp);
+                }
+                return result;
+            }
+            catch(Exception ex)
+            {
+                throw new Exception("获取员工工号与姓名信息失败", ex);
+            }
+        }
         // 录入新员工信息
         public static async Task AddNewStaffAsync(Staff NewStaff)
         {
@@ -331,6 +354,56 @@ namespace PersonnelManagementSystem.Services
                 System.Diagnostics.Debug.WriteLine("录入新员工信息失败" + ex.Message);
                 throw new Exception("录入新员工信息失败", ex);
             }
+        }
+        // 通过工号获取员工信息
+        public static async Task<Staff> GetStaffInfoByIDAsync(string id)
+        {
+            Staff StaffInfo = null;
+            using var connection = new MySqlConnection(connectionString);
+            await connection.OpenAsync();
+            var command = connection.CreateCommand();
+            command.CommandText = "select * from view_all_staff where sID = @id";
+            command.Parameters.AddWithValue("@id", id);
+            var reader = await command.ExecuteReaderAsync();
+            if (reader.Read())
+            {
+                StaffInfo = new Staff
+                {
+                    ID = reader.GetString("sID"),
+                    Password = reader.GetString("sPassword"),
+                    Name = reader.GetString("sName"),
+                    Sex = reader.GetString("sSex"),
+                    Birthday = reader.GetDateTime("sBirthday").ToString("yyyy-MM-dd"),
+                    Department = reader.GetString("dName"),
+                    Job = reader.GetString("jDescription"),
+                    Education = reader.GetString("eDescription"),
+                    Specialty = reader.GetString("sSpecialty"),
+                    Address = reader.GetString("sAddress"),
+                    Telephone = reader.GetString("sTel"),
+                    Email = reader.GetString("sEmail"),
+                    State = reader.GetString("stateDescription")
+                };   
+            }
+            return StaffInfo;
+        }
+        // 修改员工信息
+        public static async Task EditStaffInfoAsync(Staff staff)
+        {
+            using var connection = new MySqlConnection(connectionString);
+            await connection.OpenAsync();
+            var command = connection.CreateCommand();
+            command.CommandText = "call proc_edit_staff(@id,@name,@sex,@birthday,@eDescription,@specialty,@address,@tel,@email)";
+            command.Parameters.AddWithValue("@id", staff.ID);
+            command.Parameters.AddWithValue("@name", staff.Name);
+            command.Parameters.AddWithValue("@sex", staff.Sex);
+            command.Parameters.AddWithValue("@birthday", staff.Birthday);
+            command.Parameters.AddWithValue("@eDescription", staff.Education);
+            command.Parameters.AddWithValue("specialty", staff.Specialty);
+            command.Parameters.AddWithValue("@address", staff.Address);
+            command.Parameters.AddWithValue("@tel", staff.Telephone);
+            command.Parameters.AddWithValue("@email", staff.Email);
+
+            await command.ExecuteNonQueryAsync();
         }
     }
 }
