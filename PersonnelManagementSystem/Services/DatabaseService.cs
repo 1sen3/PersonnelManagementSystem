@@ -405,5 +405,41 @@ namespace PersonnelManagementSystem.Services
 
             await command.ExecuteNonQueryAsync();
         }
+        // 修改密码
+        public static async Task<bool> EditPasswordAsync(string ID,string NewPassword,string VerifInfo,string Type)
+        {
+            using var connection = new MySqlConnection(connectionString);
+            await connection.OpenAsync();
+            var commandFind = connection.CreateCommand();
+            if(Type == "手机号")
+            {
+                commandFind.CommandText = "select count(*) from shuyisen_staff where sID = @ID and sTel = @VerifInfo";
+            }
+            else if (Type == "邮箱")
+            {
+                commandFind.CommandText = "select count(*) from shuyisen_staff where sID = @ID and sEmail = @VerifInfo";
+            }
+            commandFind.Parameters.AddWithValue("@ID", ID);
+            commandFind.Parameters.AddWithValue("@VerifInfo", VerifInfo);
+            bool valid = (Int64)await commandFind.ExecuteScalarAsync() == 1 ? true : false;
+            if (valid)
+            {
+                var commndUpdate = connection.CreateCommand();
+                if (Type == "手机号")
+                {
+                    commndUpdate.CommandText = "update shuyisen_staff set sPassword = @NewPassword where sID = @ID and sTel = @VerifInfo";
+                }
+                else if(Type == "邮箱")
+                {
+                    commndUpdate.CommandText = "update shuyisen_staff set sPassword = @NewPassword where sID = @ID and sEmail = @VerifInfo";
+                }
+                commndUpdate.Parameters.AddWithValue("@NewPassword", NewPassword);
+                commndUpdate.Parameters.AddWithValue("@ID", ID);
+                commndUpdate.Parameters.AddWithValue("@VerifInfo", VerifInfo);
+                await commndUpdate.ExecuteNonQueryAsync();
+                return true;
+            }
+            else return false;
+        }
     }
 }

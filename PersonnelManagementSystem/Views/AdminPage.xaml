@@ -49,7 +49,6 @@
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Spacing="16" Padding="16 0 0 0">
                         <Image Source="/Assets/StoreLogo.scale-100.png" Width="26" Height="26"/>
                         <TextBlock Text="人事管理系统" VerticalAlignment="Center" FontSize="12"/>
-                        <TextBlock Text="管理员端" FontSize="12" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                     </StackPanel>
                 </ControlTemplate>
             </TitleBar.Template>

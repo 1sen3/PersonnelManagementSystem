@@ -6,6 +6,7 @@
     xmlns:local="using:PersonnelManagementSystem.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ic="using:FluentIcons.WinUI"
     mc:Ignorable="d">
 
     <Grid>
@@ -31,11 +32,13 @@
                         HorizontalAlignment="Center"
                         Spacing="12">
                 <Button x:Name="LoginButton"
-                        Content="登录"
                         Style="{ThemeResource AccentButtonStyle}"
-                        Command="{x:Bind ViewModel.LoginCommand}"/>
+                        Command="{x:Bind ViewModel.LoginCommand}"
+                        Content="登录">
+                </Button>
                 <Button x:Name="ForgetPasswordButton"
-                        Content="忘记密码"/>
+                        Content="忘记密码"
+                        Command="{x:Bind ViewModel.ForgetPasswordCommand}"/>
             </StackPanel>
         </StackPanel>
     </Grid>
