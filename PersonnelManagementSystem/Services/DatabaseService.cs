@@ -9,6 +9,7 @@ using Google.Protobuf.WellKnownTypes;
 using Microsoft.UI.Xaml.Controls;
 using MySql.Data.MySqlClient;
 using PersonnelManagementSystem.Models;
+using PersonnelManagementSystem.Views;
 using Windows.Data.Text;
 
 namespace PersonnelManagementSystem.Services
@@ -421,7 +422,7 @@ namespace PersonnelManagementSystem.Services
             }
             commandFind.Parameters.AddWithValue("@ID", ID);
             commandFind.Parameters.AddWithValue("@VerifInfo", VerifInfo);
-            bool valid = (Int64)await commandFind.ExecuteScalarAsync() == 1 ? true : false;
+            bool valid = (Int64)await commandFind.ExecuteScalarAsync() == 1;
             if (valid)
             {
                 var commndUpdate = connection.CreateCommand();
@@ -440,6 +441,68 @@ namespace PersonnelManagementSystem.Services
                 return true;
             }
             else return false;
+        }
+        // 按部门筛选员工
+        public static async Task<List<Staff>> FilterByDeptAsync(string dept)
+        {
+            var Staffs = new List<Staff>();
+            using var connection = new MySqlConnection(connectionString);
+            await connection.OpenAsync();
+            var command = connection.CreateCommand();
+            command.CommandText = "select * from view_all_staff where dName = @dept";
+            command.Parameters.AddWithValue("@dept", dept);
+            var reader = await command.ExecuteReaderAsync();
+            while (reader.Read())
+            {
+                Staffs.Add(new Staff
+                {
+                    ID = reader.GetString("sID"),
+                    Password = reader.GetString("sPassword"),
+                    Name = reader.GetString("sName"),
+                    Sex = reader.GetString("sSex"),
+                    Birthday = reader.GetDateTime("sBirthday").ToString("yyyy-MM-dd"),
+                    Department = reader.GetString("dName"),
+                    Job = reader.GetString("jDescription"),
+                    Education = reader.GetString("eDescription"),
+                    Specialty = reader.GetString("sSpecialty"),
+                    Address = reader.GetString("sAddress"),
+                    Telephone = reader.GetString("sTel"),
+                    Email = reader.GetString("sEmail"),
+                    State = reader.GetString("stateDescription")
+                });
+            }
+            return Staffs;
+        }
+        // 按姓名搜索员工
+        public static async Task<List<Staff>> SearchStaffByNameAsync(string name)
+        {
+            var Staffs = new List<Staff>();
+            using var connection = new MySqlConnection(connectionString);
+            await connection.OpenAsync();
+            var command = connection.CreateCommand();
+            command.CommandText = "select * from view_all_staff where sName like @name";
+            command.Parameters.AddWithValue("@name", $"%{name}%");
+            var reader = await command.ExecuteReaderAsync();
+            while (reader.Read())
+            {
+                Staffs.Add(new Staff
+                {
+                    ID = reader.GetString("sID"),
+                    Password = reader.GetString("sPassword"),
+                    Name = reader.GetString("sName"),
+                    Sex = reader.GetString("sSex"),
+                    Birthday = reader.GetDateTime("sBirthday").ToString("yyyy-MM-dd"),
+                    Department = reader.GetString("dName"),
+                    Job = reader.GetString("jDescription"),
+                    Education = reader.GetString("eDescription"),
+                    Specialty = reader.GetString("sSpecialty"),
+                    Address = reader.GetString("sAddress"),
+                    Telephone = reader.GetString("sTel"),
+                    Email = reader.GetString("sEmail"),
+                    State = reader.GetString("stateDescription")
+                });
+            }
+            return Staffs;
         }
     }
 }

@@ -9,45 +9,21 @@ using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using System;
 using System.Collections.Generic;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace PersonnelManagementSystem.ViewModels
 {
-    public class ChangeStaffViewModel : INotifyPropertyChanged
+    [ObservableObject]
+    public partial class ChangeStaffViewModel
     {
+        [ObservableProperty]
         private ObservableCollection<Personnel> _personnelList;
+        [ObservableProperty]
         private bool _isLoading;
-        public event PropertyChangedEventHandler PropertyChanged;
-        public ICommand AddNewPersonnelCommand { get; private set; }
-        public ObservableCollection<Personnel> PersonnelList
-        {
-            get => _personnelList;
-            set
-            {
-                if(_personnelList != value)
-                {
-                    _personnelList = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        public bool IsLoading
-        {
-            get => _isLoading;
-            set
-            {
-                if(_isLoading != value)
-                {
-                    _isLoading = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
         public ChangeStaffViewModel()
         {
-            PersonnelList = new ObservableCollection<Personnel>();
-            LoadPersonnelsDataAsync();
-
-            AddNewPersonnelCommand = new RelayCommand(ExecuteAddNewPersonnel);
+            PersonnelList = [];
+            _ = LoadPersonnelsDataAsync();
         }
         public async Task LoadPersonnelsDataAsync()
         {
@@ -67,11 +43,8 @@ namespace PersonnelManagementSystem.ViewModels
                 IsLoading = false;
             }
         }
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-        private async void ExecuteAddNewPersonnel()
+        [RelayCommand]
+        private async void AddNewPersonnel()
         {
             ContentDialog dialog = new ContentDialog
             {

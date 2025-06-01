@@ -23,11 +23,19 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="auto"/>
             </Grid.ColumnDefinitions>
-            <TextBlock Text="员工列表"
-                       FontSize="16"
-                       FontWeight="Bold"
-                       VerticalAlignment="Center"
-                       Grid.Column="0"/>
+            <StackPanel Orientation="Horizontal" Spacing="16" Grid.Column="0">
+                <TextBlock Text="员工列表"
+                           FontSize="16"
+                           FontWeight="Bold"
+                           VerticalAlignment="Center"
+                           Grid.Column="0"/>
+                <ComboBox Width="150" ItemsSource="{x:Bind ViewModel.DeptList}" SelectedItem="{x:Bind ViewModel.SelectedDept,Mode=TwoWay}" SelectedIndex="0"/>
+                <AutoSuggestBox PlaceholderText="搜索员工姓名或工号"
+                                QueryIcon="Find"
+                                Width="300"
+                                TextChanged="{x:Bind ViewModel.AutoSuggestBox_TextChanged}"
+                                QuerySubmitted="{x:Bind ViewModel.AutoSuggestBox_QuerySubmitted}"/>
+            </StackPanel>
             <StackPanel Orientation="Horizontal" Spacing="16" Grid.Column="1">
                 <Button x:Name="AddNewStaffButton"
                         VerticalAlignment="Center"

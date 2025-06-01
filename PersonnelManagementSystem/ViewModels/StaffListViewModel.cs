@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.WinUI;
 using Microsoft.UI.Xaml.Controls;
 using PersonnelManagementSystem.Models;
 using PersonnelManagementSystem.Services;
@@ -14,53 +17,55 @@ using Windows.Globalization;
 
 namespace PersonnelManagementSystem.ViewModels
 {
-    public class StaffListViewModel : INotifyPropertyChanged
+    [ObservableObject]
+    public partial class StaffListViewModel
     {
+        [ObservableProperty]
         private ObservableCollection<Staff> _staffList;
+        [ObservableProperty]
+        private ObservableCollection<string> _deptList;
+        [ObservableProperty]
+        private string _selectedDept;
+        [ObservableProperty]
         private bool _isLoading;
-        public event PropertyChangedEventHandler PropertyChanged;
-        public ICommand AddNewStaffCommand { get;private set; }
-        public ICommand EditStaffInfoCommand { get; private set; }
-        public ObservableCollection<Staff> StaffList
+        partial void OnSelectedDeptChanged(string? value)
         {
-            get => _staffList;
-            set
-            {
-                if(_staffList != value)
-                {
-                    _staffList = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        public bool IsLoading
-        {
-            get => _isLoading;
-            set
-            {
-                if (_isLoading != value)
-                {
-                    _isLoading = value;
-                    OnPropertyChanged();
-                }
-            }
+            LoadStaffDataAsync(value);
         }
         public StaffListViewModel()
         {
             StaffList = [];
-            LoadStaffDataAsync();
+            DeptList = [];
+            Suggestions = [];
+            _ = Initialize();
 
-            AddNewStaffCommand = new RelayCommand(ExecuteAddNewStaffAsync);
-            EditStaffInfoCommand = new RelayCommand(ExecuteEditStaffInfoAsync);
+            SelectedDept = "所有部门";
         }
-        public async Task LoadStaffDataAsync()
+        private async Task Initialize()
+        {
+            await GetDeptsAsync();
+            await LoadStaffDataAsync(SelectedDept);
+        }
+        // 加载所有员工信息
+        public async Task LoadStaffDataAsync(string dept)
         {
             try
             {
                 IsLoading = true;
-                var staffs = await DatabaseService.GetStaffListAsync();
+                var staffs = new List<Staff>();
+                if(dept == "所有部门")
+                {
+                    staffs = await DatabaseService.GetStaffListAsync();
+                }
+                else
+                {
+                    staffs = await DatabaseService.FilterByDeptAsync(dept);
+                }
                 StaffList.Clear();
-                foreach (var staff in staffs) StaffList.Add(staff);
+                foreach (Staff s in staffs)
+                {
+                    StaffList.Add(s);
+                }
             }
             catch (System.Exception ex)
             {
@@ -71,11 +76,8 @@ namespace PersonnelManagementSystem.ViewModels
                 IsLoading = false;
             }
         }
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-        public async void ExecuteAddNewStaffAsync()
+        [RelayCommand]
+        public async void AddNewStaff()
         {
             ContentDialog dialog = new()
             {
@@ -224,7 +226,7 @@ namespace PersonnelManagementSystem.ViewModels
 
             if (result == ContentDialogResult.Primary)
             {
-                Staff NewStaff = new Staff
+                var NewStaff = new Staff
                 {
                     Name = nameTextBox.Text,
                     Sex = genderComboBox.SelectedItem?.ToString(),
@@ -248,10 +250,11 @@ namespace PersonnelManagementSystem.ViewModels
                     XamlRoot = App.MainWindow.Content.XamlRoot
                 }.ShowAsync();
 
-                await LoadStaffDataAsync();
+                await LoadStaffDataAsync(SelectedDept);
             }
         }
-        public async void ExecuteEditStaffInfoAsync()
+        [RelayCommand]
+        public async void EditStaffInfo()
         {
             try
             {
@@ -291,7 +294,7 @@ namespace PersonnelManagementSystem.ViewModels
 
                 if (result == ContentDialogResult.Primary)
                 {
-                    string ID = staffComboBox.SelectedItem?.ToString().Substring(0, 6);
+                    string ID = staffComboBox.SelectedItem?.ToString()[..6];
                     var StaffInfo = await DatabaseService.GetStaffInfoByIDAsync(ID);
                     var NextDialog = new ContentDialog
                     {
@@ -331,9 +334,9 @@ namespace PersonnelManagementSystem.ViewModels
                     var BirthdayDatePicker = new CalendarDatePicker
                     {
                         Header = "出生日期",
-                        Width = 200
+                        Width = 200,
+                        Date = DateTime.ParseExact(StaffInfo.Birthday, "yyyy-MM-dd", System.Globalization.CultureInfo.CurrentCulture)
                     };
-                    BirthdayDatePicker.Date = DateTime.ParseExact(StaffInfo.Birthday, "yyyy-MM-dd", System.Globalization.CultureInfo.CurrentCulture);
 
                     // 教育水平选择器
                     var EduComboBox = new ComboBox
@@ -439,7 +442,7 @@ namespace PersonnelManagementSystem.ViewModels
                             XamlRoot = App.MainWindow.Content.XamlRoot
                         }.ShowAsync();
 
-                        await LoadStaffDataAsync();
+                        await LoadStaffDataAsync(SelectedDept);
                     }
                 }
             }
@@ -457,5 +460,98 @@ namespace PersonnelManagementSystem.ViewModels
                 }.ShowAsync();
             }
         }
+        public async Task GetDeptsAsync()
+        {
+            var depts = await DatabaseService.GetDepartmentListAsync();
+            DeptList.Clear();
+            DeptList.Add("所有部门");
+            foreach(string d in depts) DeptList.Add(d);
+        }
+
+        // 搜索框处理
+        #region
+        [ObservableProperty]
+        private string? searchText;
+        [ObservableProperty]
+        private ObservableCollection<string> suggestions;
+
+        public void AutoSuggestBox_TextChanged(AutoSuggestBox sender,AutoSuggestBoxTextChangedEventArgs args)
+        {
+            if(args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+            {
+                var suggestions = new List<string>();
+                if (!string.IsNullOrEmpty(sender.Text))
+                {
+                    var querySuggestions = StaffList.Where(s => s.Name.Contains(sender.Text, StringComparison.OrdinalIgnoreCase)
+                                           || s.ID.Contains(sender.Text, StringComparison.OrdinalIgnoreCase)).Select(s => $"{s.ID} - {s.Name}").ToList();
+                    suggestions.AddRange(querySuggestions);
+                }
+                if(suggestions.Count > 0)
+                {
+                    Suggestions.Clear();
+                    foreach(var s in suggestions)
+                    {
+                        Suggestions.Add(s);
+                    }
+                    sender.ItemsSource = Suggestions;
+                }
+                else
+                {
+                    sender.ItemsSource = new string[] { "未找到匹配的员工" };
+                }
+            }
+        }
+        public void AutoSuggestBox_QuerySubmitted(AutoSuggestBox sender,AutoSuggestBoxQuerySubmittedEventArgs args)
+        {
+            // 选择了建议列表中的项目
+            if(args.ChosenSuggestion != null && args.ChosenSuggestion != "未找到匹配的员工")
+            {
+                SearchStaff(args.ChosenSuggestion.ToString());
+            }
+            // 输入文本并按下了回车键
+            else if (!string.IsNullOrEmpty(args.QueryText))
+            {
+                SearchStaff(args.QueryText);
+            }
+        }
+        // 搜索员工
+        private async void SearchStaff(string query) {
+            try
+            {
+                IsLoading = true;
+                // 如果查询包含 ID，则尝试按 ID 搜索
+                if(query.Length >= 6 && query[..6].All(char.IsDigit))
+                {
+                    string staffID = query[..6];
+                    var staff = await DatabaseService.GetStaffInfoByIDAsync(staffID);
+                    if(staff != null)
+                    {
+                        StaffList.Clear();
+                        StaffList.Add(staff);
+                        return;
+                    }
+                }
+                // 否则按姓名搜索
+                else
+                {
+                    var staffs = await DatabaseService.SearchStaffByNameAsync(query);
+                    if(staffs.Count > 0)
+                    {
+                        StaffList.Clear();
+                        foreach (var s in staffs) StaffList.Add(s);
+                        return;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"搜索员工出错,{ex.Message}");
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+        #endregion
     }
 }

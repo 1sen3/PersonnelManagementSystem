@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml.Controls;
@@ -15,47 +16,16 @@ using PersonnelManagementSystem.Views;
 
 namespace PersonnelManagementSystem.ViewModels
 {
-    public class LoginViewModel : INotifyPropertyChanged
+    [ObservableObject]
+    public partial class LoginViewModel
     {
+        [ObservableProperty]
         private string _id;
+        [ObservableProperty]
         private string _password;
-        public event PropertyChangedEventHandler PropertyChanged;
-        public ICommand LoginCommand { get; private set; }
-        public ICommand ForgetPasswordCommand { get; private set; }
-        public string Id
-        {
-            get => _id;
-            set
-            {
-                if(_id != value)
-                {
-                    _id = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        public string Password
-        {
-            get => _password;
-            set
-            {
-                if(_password != value)
-                {
-                    _password = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        public LoginViewModel()
-        {
-            LoginCommand = new RelayCommand(ExecuteLoginAsync);
-            ForgetPasswordCommand = new RelayCommand(ExecuteForgetPasswordAsync);
-        }
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-        public async void ExecuteLoginAsync()
+        public LoginViewModel() {}
+        [RelayCommand]
+        public async void Login()
         {
             App.CurrentUser = await DatabaseService.LoginAsync(Id, Password);
             if(App.CurrentUser != null)
@@ -75,8 +45,20 @@ namespace PersonnelManagementSystem.ViewModels
                     });
                 }
             }
+            else
+            {
+                await new ContentDialog
+                {
+                    Title = "登陆失败",
+                    Content = "请在检查工号或密码后重试",
+                    PrimaryButtonText = "好",
+                    DefaultButton = ContentDialogButton.Primary,
+                    XamlRoot = App.MainWindow.Content.XamlRoot,
+                }.ShowAsync();
+            }
         }
-        public async void ExecuteForgetPasswordAsync()
+        [RelayCommand]
+        public async void ForgetPassword()
         {
             try
             {
